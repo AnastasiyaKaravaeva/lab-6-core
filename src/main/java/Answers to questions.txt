@@ -1,0 +1,150 @@
+17)В чем разница между этими двумя приемами? Почему в одном случае мы
+  проверили значение, а во втором- отловили исключение?
+
+В первом случае мы проверяем значение (длину массива parts) для того, чтобы убедиться, что ввод пользователя соответствует ожидаемому формату.
+Если значение не соответствует ожидаемому, то мы выводим сообщение об ошибке и пропускаем текущую итерацию цикла.
+Во втором случае мы отлавливаем исключение NumberFormatException, которое может возникнуть при попытке преобразования строки в число.
+Обработывая ситуацию, когда пользователь вводит некорректное числовое значение.
+Мы выводим сообщение об ошибке и пропускаем текущую итерацию цикла, чтобы позволить пользователю повторить ввод корректного значения.
+
+19) Проведите анализ- чего вам не хватило в функционале массивов?
+В текущей реализации массивы имеют фиксированный размер. Если пользователь вводит больше продуктов, чем размер массива, они не будут сохранены.
+Eсли пользователь вводит неверный формат числа, выводится только сообщение об ошибке и предлагается повторить ввод. Можно добавить более подробные сообщения об ошибке, указывающие на конкретную проблему с введенным числом.
+Eсли пользователь вводит продукт, который уже существует в массиве, его стоимость и количество просто обновляются.
+
+20.п1.
+Для ввода произвольного числа продуктов, можно использовать динамический список (ArrayList) вместо массивов фиксированного размера.
+Вместо массивов masOfProducts, masOfCosts и masOfCounts, можно создать один список List<Product> products.
+При каждом вводе нового продукта, будем добавлять его в список products с помощью метода add().
+
+Проверки:
+1. Наличие продукта перед его обновлением
+2. На некорректные значения стоимости и количества
+3. Наличия продукта перед его удалением
+4. Наличия продуктов в списке перед выполнением операций
+
+20.п2.
+Возможно ли в данной программе сделать ввод списка продуктов для
+разных пользователей (для каждого свой список продуктов)? А с
+сортировкой по пользователям? Что этому мешает?
+
+Возможно.
+Но для этого нужно использовать коллекции - Map или List, чтобы хранить данные о продуктах для каждого пользователя.
+Вместо массивов masOfProducts, masOfCosts и masOfCounts, можно создать Map для хранения продуктов и их стоимости, а также Map для хранения количества продуктов. Ключом в Map будет id пользователя.
+
+20.п3.
+Как можно реализовать эту программу, используя только 1н массив?
+
+Можно создать класс Product с полями name, cost и count.
+Затем создать массив объектов этого класса, и каждый объект будет представлять один продукт.
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Scanner;
+
+public class Main {
+    private static class Product {
+        String name;
+        int cost;
+        int count;
+
+        public Product(String name, int cost, int count) {
+            this.name = name;
+            this.cost = cost;
+            this.count = count;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        Product[] products = new Product[5];
+
+        int count = 0;
+        while (sc.hasNext() && count < 5) {
+            String s = sc.nextLine();
+            if ("exit".equals(s)) {
+                break;
+            }
+            String[] parts = s.split(" ");
+            if (parts.length != 3) {
+                System.out.println("Wrong number of arguments! Retry!");
+                continue;
+            }
+            String productName = parts[0];
+            int productCost;
+            int productCount;
+            try {
+                productCost = Integer.parseInt(parts[1]);
+                productCount = Integer.parseInt(parts[2]);
+            } catch (NumberFormatException ex) {
+                System.out.println(ex.getMessage());
+                System.out.println("Retry!");
+                continue;
+            }
+
+            boolean productAlreadyExists = false;
+            for (int i = 0; i < 5; i++) {
+                if (products[i] != null && productName.equals(products[i].name)) {
+                    products[i].cost = productCost;
+                    products[i].count += productCount;
+                    productAlreadyExists = true;
+                    break;
+                }
+            }
+
+            if (!productAlreadyExists) {
+                for (int i = 0; i < 5; i++) {
+                    if (products[i] == null) {
+                        products[i] = new Product(productName, productCost, productCount);
+                        break;
+                    }
+                }
+            }
+
+            count++;
+        }
+        sc.close();
+
+        Product[] sortedProducts = Arrays.copyOf(products, 5);
+        Arrays.sort(sortedProducts, new Comparator<Product>() {
+            @Override
+            public int compare(Product p1, Product p2) {
+                int res = String.CASE_INSENSITIVE_ORDER.compare(p1.name, p2.name);
+                if (res == 0) {
+                    res = p1.name.compareTo(p2.name);
+                }
+                return res;
+            }
+        });
+
+        long sum = 0;
+        for (Product product : products) {
+            if (product != null) {
+                sum += product.cost * product.count;
+            }
+        }
+
+        System.out.println(sum);
+
+        for (int j = 0; j < 3; j++) {
+            int indexOfMostPopularProduct = 0;
+            for (int i = 0; i < 5; i++) {
+                if (products[i] != null && products[i].count > products[indexOfMostPopularProduct].count) {
+                    indexOfMostPopularProduct = i;
+                }
+            }
+
+            if (products[indexOfMostPopularProduct] != null) {
+                System.out.println("Most popular product is " + products[indexOfMostPopularProduct].name);
+
+                products[indexOfMostPopularProduct] = null;
+            }
+        }
+    }
+}
+
+
+
+
+
